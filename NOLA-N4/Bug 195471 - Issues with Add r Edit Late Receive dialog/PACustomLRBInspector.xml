@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<variforms xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schemas/Variforms.xsd">
+    <actions>
+        <action id="view">view</action>
+        <action id="create">create</action>
+        <action id="update">update</action>
+        <action id="delete">delete</action>
+        <action id="query">query</action>
+    </actions>
+    <inspector id="PA_LRB_INSPECTOR">
+        <title>Late Receival by Booking Inspector for #titleField#</title>
+        <entity>
+            <name>com.portsamerica.navis.core.CustomPALateReceivalBooking</name>
+            <primaryKey>customEntityGkey</primaryKey>
+            <titleField>customEntityGkey</titleField>
+        </entity>
+
+        <fields>
+            <entity>
+                <name>com.portsamerica.navis.core.CustomPALateReceivalBooking</name>
+            </entity>
+            <field fieldId="customEntityGkey"/>
+        </fields>
+        <header>
+            <include title="VESSEL VISIT DETAILS" variformId="FORM_LRB_VESSEL_DETAILS"/>
+            <include title="BOOKING INFORMATION" variformId="FORM_LRB_BOOKING_DETAILS"/>
+            <include title="LRB DETAILS" variformId="FORM_LRB_INS_DETAILS"/>
+        </header>
+
+        <inspections>
+            <include variformId="TABLE_LRB_UNITS_INSPECTOR" label="INSPECTOR_LRB_UNITS"/>
+        </inspections>
+
+    </inspector>
+
+
+    <form id="FORM_LRB_ENTITY">
+        <title lang="en">Booking Inspector for #titleField#</title>
+        <entity>
+            <name>com.portsamerica.navis.core.CustomPALateReceivalBooking</name>
+            <primaryKey>customEntityGkey</primaryKey>
+            <titleField>customEntityGkey</titleField>
+        </entity>
+        <actionsAllowed>
+            <actionMode action="view" mode="viewOnly"/>
+        </actionsAllowed>
+        <attributes>
+            <attribute key="inspectorForm" value="true"/>
+            <attribute key="displayButtons" value="false"/>
+            <attribute key="formAction" value="view"/>
+            <attribute key="displayShortLabels" value="true"/>
+        </attributes>
+    </form>
+
+    <form id="FORM_LRB_VESSEL_DETAILS" extends="FORM_LRB_ENTITY">
+        <grid>
+            <row>
+                <cell>
+                    <item fieldId="railOrderInspectorImage" displayLabel="false"/>
+                </cell>
+            </row>
+            <row>
+                <cell>
+                    <item fieldId="customEntityFields.customlrbLineOperator.bzuId"  label="Line"/>
+                </cell>
+            </row>
+            <row>
+                <cell>
+                    <item fieldId="customEntityFields.customlrbVesselVisit.cvId"  label="Vessel Id"/>
+                </cell>
+            </row>
+
+        </grid>
+    </form>
+
+    <form id="FORM_LRB_BOOKING_DETAILS" extends="FORM_LRB_ENTITY">
+        <item fieldId="customEntityFields.customlrbBookingOrder.eqboNbr"  label="Booking Number"/>
+        <item fieldId="customEntityFields.customlrbBookingOrder.eqoQuantity" label="Bkg Quantity"/>				
+        <item fieldId="customEntityFields.customlrbEqOrderItem.eqoiQty" label="Item Qty"/>						
+        <item fieldId="customEntityFields.customlrbBookingOrder.eqoPod1.pointId" label="POD"/>
+        <item fieldId="customEntityFields.customlrbBookingOrder.eqoOod" label="Booking OOG"/>
+        <item fieldId="customEntityFields.customlrbVesselVisit.cvCvd.vvdTimeCargoCutoff" label="Dry Cutoff"/>
+        <item fieldId="customEntityFields.customlrbVesselVisit.cvCvd.vvdTimeHazCutoff" label="Haz Cutoff"/>
+        <item fieldId="customEntityFields.customlrbVesselVisit.cvCvd.vvdTimeReeferCutoff" label="Reefer Cutoff"/>
+		
+    </form>
+
+    <form id="FORM_LRB_INS_DETAILS" extends="FORM_LRB_ENTITY">
+        <item fieldId="customEntityFields.customlrbMaxCount"  label="Late Receive Count"/>
+        <item fieldId="customEntityFields.customlrbCutoffDate"  label="Late Receive Cutoff"/>
+        <item fieldId="customEntityFields.customlrbHazards" label="Hazard Class"/>		
+        <item fieldId="customEntityFields.customlrbIsOOG" label="LRB OOG"/>						
+    </form>
+
+    <table id="TABLE_LRB_UNITS_INSPECTOR" extends="TABLE_LRB_UNITS">
+        <tableActions>
+            <tableActionMode action="create" mode="disabled"/>
+            <tableActionMode action="view" mode="disabled"/>
+            <tableActionMode action="update" mode="disabled"/>
+            <tableActionMode action="delete" mode="disabled"/>
+        </tableActions>
+        <uiManager ref="customBeanPALRBUnitsViewUiTableManager"/>
+    </table>
+
+    <table id="TABLE_LRB_UNITS">
+        <title>Units</title>
+        <entity>
+            <name>UnitFacilityVisit</name>
+            <primaryKey>ufvUnit.unitGkey</primaryKey>
+        </entity>
+        <tableActions>
+            <tableActionMode action="create" mode="disabled"/>
+            <tableActionMode action="update" mode="disabled"/>
+            <tableActionMode action="delete" mode="disabled"/>
+        </tableActions>
+        <doubleClickCommand userActionId="INV_INSPECT_UFV" commandRefId="registeredCommand" destination="dialog"/>
+        <column fieldId="ufvUnit.unitEquipment.eqIdFull"/>
+        <column fieldId="ufvUnit.unitLineOperator.bzuId" complexQuery="omit"/>
+        <column fieldId="ufvUnit.unitLineOperator" complexQuery="include" display="none"/>
+        <column fieldId="ufvUnit.unitCategory"/>
+        <column fieldId="ufvUnit.unitFreightKind"/>
+        <column fieldId="ufvVisitState"/>		
+        <column fieldId="ufvUnit.unitVisitState"  display="viewable"/>
+        <column fieldId="ufvTransitState"/>
+		<column fieldId="ufvUnit.unitGoods.gdsIsHazardous"/>
+		<column fieldId="ufvLastKnownPosition.posName"/>
+        <column fieldId="ufvUnit.unitEquipment.eqEquipType.eqtypId"/>
+        <column fieldId="ufvTimeIn"/>		
+        <column fieldId="ufvTimeEcIn"/>		
+        <column fieldId="ufvUnit.unitEquipment.eqEquipType.eqtypIsoGroup" display="viewable"/>
+		
+        <column fieldId="ufvUnit.unitCreateTime" display="viewable"/>
+    </table>
+
+</variforms>
+

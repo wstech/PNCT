@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<variforms xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schemas/Variforms.xsd">
+    <actions>
+        <!--
+            These are the most common used actions. Please verify needs and edit accordingly.
+        -->
+        <action id="view">view</action>
+        <action id="create">create</action>
+        <action id="update">update</action>
+        <action id="delete">delete</action>
+        <action id="query">query</action>
+    </actions>
+    <table id="CUSTOM_LATE_RECEIVAL_BOOKING" defaultSearchfieldId="customEntityFields.customlrbVesselVisit.cvId">
+        <title>Late Receive</title>
+        <customization creationType="CUSTOM_NEW" />
+        <entity>
+            <name>com.portsamerica.navis.core.CustomPALateReceivalBooking</name>
+            <primaryKey>customEntityGkey</primaryKey>
+        </entity>
+        <tableActions>
+            <tableActionMode action="create" mode="allow" />
+            <tableActionMode action="update" mode="disabled" />
+            <tableActionMode action="view" mode="disabled" />
+            <tableActionMode action="delete" mode="allow" />
+        </tableActions>
+        <crudCommand variformId="CUSTOM_LRB_FORM"/>
+        <doubleClickCommand variformId="PA_LRB_INSPECTOR" modal="false" destination="dialog" />
+        <!--<uiManager ref="customBeanDEViewUiTableManager"></uiManager> -->
+        <menu category="context">
+		<menuItem userActionId="EDIT_LATE_RECEIVAL_BOOKING" label="Edit Late Receival Booking" variformId="CUSTOM_LRB_FORM" enable="oneSource" />
+            <menuItem userActionId="PA_LAUNCH_LRB_INSPECTOR" label="Late Receival by Booking Inspector" variformId="PA_LRB_INSPECTOR" enable="oneSource" />					
+        </menu>
+        <menu category="actions">
+            <menuItem userActionId="EDIT_LATE_RECEIVAL_BOOKING" label="Edit Late Receival Booking" variformId="CUSTOM_LRB_FORM" enable="oneSource" />
+            <menuItem userActionId="LAUNCH_LRB_INSPECTOR" label="Late Receival by Booking Inspector" variformId="PA_LRB_INSPECTOR" enable="oneSource" />						
+        </menu>		
+        <column fieldId="customEntityFields.customlrbLineOperator.bzuId" label="Line"/>
+        <column fieldId="customEntityFields.customlrbVesselVisit.cvId" label="Vessel Id"/>
+        <column fieldId="customEntityFields.customlrbVesselVisit.cvVisitPhase" label="Vessel Phase"/>
+        <column fieldId="customEntityFields.customlrbBookingOrder.eqboNbr" label="Booking Number"/>
+        <column fieldId="customEntityFields.customlrbEqOrderItem.eqoiSampleEquipType.eqtypId" label="ISO Type"/>
+        <column fieldId="customEntityFields.customlrbEqOrderItem.eqoiEqSize" label="Size"/>
+        <column fieldId="customEntityFields.customlrbEqOrderItem.eqoiEqIsoGroup" label="Type"/>
+        <column fieldId="customEntityFields.customlrbEqOrderItem.eqoiEqHeight" label="Height"/>
+        <column fieldId="customEntityFields.customlrbCutoffDate" label="Late Receive Cutoff" />
+        <column fieldId="customEntityFields.customlrbMaxCount" label="Late Receive Count"/>
+        <column fieldId="customEntityFields.customlrbHazards" label="Hazard Class"/>
+        <column fieldId="customEntityFields.customlrbBookingOrder.eqoPod1.pointId" label="POD"/>		
+        <column fieldId="customEntityFields.customlrbBookingOrder.eqoQuantity" label="Bkg Quantity"/>				
+        <column fieldId="customEntityFields.customlrbEqOrderItem.eqoiQty" label="Item Qty"/>						
+        <column fieldId="customEntityFields.customlrbEqOrderItem.eqoiTallyReceive" label="Tally In"/>				
+        <column fieldId="customEntityFields.customlrbEqOrderItem.eqoiTally" label="Tally Out"/>		
+        <column fieldId="customEntityFields.customlrbIsOOG" label="LRB OOG"/>		
+        <column fieldId="customEntityFields.customlrbBookingOrder.eqoOod" label="Booking OOG"/>
+        <column fieldId="customEntityFields.customlrbVesselVisit.cvCvd.vvdTimeCargoCutoff" label="Dry Cutoff"/>
+        <column fieldId="customEntityFields.customlrbVesselVisit.cvCvd.vvdTimeHazCutoff" label="Haz Cutoff"/>
+        <column fieldId="customEntityFields.customlrbVesselVisit.cvCvd.vvdTimeReeferCutoff" label="Reefer Cutoff"/>
+    </table>
+</variforms>

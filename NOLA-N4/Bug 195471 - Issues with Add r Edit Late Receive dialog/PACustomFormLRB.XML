@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<variforms xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schemas/Variforms.xsd">
+    <actions>
+        <action id="view">view</action>
+        <action id="create">create</action>
+        <action id="update">update</action>
+        <action id="delete">delete</action>
+        <action id="query">query</action>
+    </actions>
+    <form id="CUSTOM_LRB_FORM">
+	<title>/ Edit Late Receive</title>
+        <customization creationType="CUSTOM_NEW"/>     <entity>
+        <name>com.portsamerica.navis.core.CustomPALateReceivalBooking</name>
+    </entity>
+        <actionsAllowed>
+            <actionMode action="create" mode="editable" />
+            <actionMode action="delete" mode="viewOnly" />
+        </actionsAllowed>
+        <controller ref="customBeanPALRBFormController" />
+        <formSubmissionCodeExtension name="PALateReceivalBookingFormSubmit"/>
+
+        <borderLayout>
+            <northPanel title="Vessel Visit Details">
+                <grid>
+                    <row>
+                        <cell>
+                            <!--<item fieldId="eqoLine" required="true">
+                            </item>-->
+                            <item fieldId="customEntityFields.customlrbLineOperator" required="true" label="Line">
+                                <item-attribute type="lovKey">argoLov.emptyLov</item-attribute>
+                                <item-attribute type="widgetSubType">search</item-attribute>
+                            </item>
+                        </cell>
+                        <cell>
+                            <item fieldId="customEntityFields.customlrbVesselVisit"  required="true"  label="Vessel Id">
+                                <item-attribute type="lovKey">argoLov.emptyLov</item-attribute>
+                                <item-attribute type="widgetSubType">search</item-attribute>
+                            </item>
+                        </cell>
+                    </row>
+                    <row>
+                        <cell>
+                            <item fieldId="customEntityFields.customlrbVesselVisit.cvVisitPhase" label="Vessel Phase"/>
+
+                        </cell>
+                        <cell>
+                            <item fieldId="customEntityFields.customlrbVesselVisit.cvCvd.vvdTimeCargoCutoff" label="Dry Cutoff">
+                            </item>
+                        </cell>
+                    </row>
+                    <row>
+                        <cell>
+                            <item fieldId="customEntityFields.customlrbVesselVisit.cvCvd.vvdTimeHazCutoff" label="Haz Cutoff"/>
+                        </cell>
+                        <cell>
+                            <item fieldId="customEntityFields.customlrbVesselVisit.cvCvd.vvdTimeReeferCutoff" label="Reefer Cutoff"/>
+                        </cell>
+                    </row>
+                </grid>
+
+            </northPanel>
+            <centerPanel title="Booking Details">
+                <grid>
+                    <row>
+                        <cell>
+                            <item fieldId="customEntityFields.customlrbBookingOrder" required="true"  label="Booking Number">
+                                <item-attribute type="lovKey">argoLov.emptyLov</item-attribute>
+                                <item-attribute type="widgetSubType">search</item-attribute>
+                            </item>
+                        </cell>
+                    </row>
+                    <row>
+                        <cell>
+                            <item fieldId="customEntityFields.customlrbEqOrderItem" required="true" label="Size Type">
+                                <item-attribute type="lovKey">argoLov.emptyLov</item-attribute>
+                                <item-attribute type="widgetSubType">search</item-attribute>
+                            </item>
+                        </cell>
+                    </row>
+					<row>
+					<cell>
+                            <item fieldId="customEntityFields.customlrbBookingOrder.eqoPod1" label="POD" />
+                        </cell>						
+                    </row>						
+                    <row>
+                        <cell>
+                            <item fieldId="customEntityFields.customlrbEqOrderItem.eqoiQty" label="Booking Item Qty" />
+                        </cell>
+                    </row>
+                    <row>
+                        <cell>
+                            <item fieldId="customEntityFields.customlrbEqOrderItem.eqoiTally" label="Allowed Qty" />
+                        </cell>
+                    </row>					
+                </grid>
+            </centerPanel>
+            <southPanel title="Late Receive by Booking Details">
+               <grid>
+
+                    <row>
+                        <cell>
+                            <item fieldId="customEntityFields.customlrbMaxCount"  required="true" label="Late Receive Count"/>
+                        </cell>
+                    </row>					
+                    <row>						
+                        <cell>
+                            <item fieldId="customEntityFields.customlrbCutoffDate"  required="true" label="Late Receive Cutoff"/>
+                        </cell>
+                    </row>
+                    <row>
+                        <cell>
+                            <item fieldId="customEntityFields.customlrbHazards" label="Hazard Class" />
+                        </cell>
+                    </row>
+                    <row>
+                        <cell>
+                            <item fieldId="customEntityFields.customlrbIsOOG" label="Is OOG" />
+                        </cell>
+                    </row>					
+                </grid>
+          </southPanel>
+        </borderLayout>
+    </form>
+</variforms>
