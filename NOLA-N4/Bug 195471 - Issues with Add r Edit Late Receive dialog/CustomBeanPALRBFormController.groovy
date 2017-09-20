@@ -1,9 +1,9 @@
 package com.portsamerica.navis.core.nola
 
 import com.navis.argo.ArgoBizMetafield
+import com.navis.argo.ArgoEntity
 import com.navis.argo.ArgoField
 import com.navis.argo.ArgoRefField
-import com.navis.argo.business.model.CarrierVisit
 import com.navis.external.framework.beans.EBean
 import com.navis.framework.metafields.MetafieldId
 import com.navis.framework.metafields.MetafieldIdFactory
@@ -26,16 +26,12 @@ import com.navis.framework.presentation.ui.event.CarinaFormValueEvent
 import com.navis.framework.presentation.ui.event.listener.AbstractCarinaFormValueListener
 import com.navis.framework.util.ValueObject
 import com.navis.inventory.InvField
-import com.navis.inventory.InventoryBizMetafield
 import com.navis.inventory.InventoryField
-import com.navis.inventory.business.imdg.HazardItem
-import com.navis.inventory.business.imdg.Hazards
+import com.navis.orders.OrdersEntity
 import com.navis.orders.OrdersField
 import com.navis.orders.OrdersQueryUtils
-import com.navis.orders.web.OrdersGuiMetafield
+import com.navis.vessel.VesselEntity
 import com.navis.vessel.VesselField
-import com.navis.vessel.business.schedule.VesselVisitDetails
-import com.sun.org.apache.xpath.internal.operations.Bool
 import org.apache.log4j.Level
 import org.apache.log4j.Logger
 
@@ -94,7 +90,7 @@ public class CustomBeanPALRBFormController extends FormController implements EBe
             });
         }
         final ICarinaWidget hazWidget = getFormWidget(CUSTOM_LRB_HAZARDS);
-        if (hazWidget!= null) {
+        if (hazWidget != null) {
             hazWidget.setEnabled(Boolean.FALSE);
         }
         final ICarinaWidget vesselFormWidget = getFormWidget(CUSTOM_LRB_VESSEL_VISIT);
@@ -125,34 +121,44 @@ public class CustomBeanPALRBFormController extends FormController implements EBe
                     if (bookingFormWidget != null) {
                         bookingFormWidget.setLovKey(LovKeyFactory.valueOf(getEqoFromVesselVisit(vesselGkey)));
                     }
-                    Object cvVisitPhase = FrameworkPresentationUtils.getEntityFieldValue("CarrierVisit", (Long) vesselFormWidget.getValue(), ArgoField.CV_VISIT_PHASE);
+
+                    MetafieldIdList cvIdList = new MetafieldIdList();
+                    cvIdList.add(ArgoField.CV_VISIT_PHASE);
+                    cvIdList.add(ArgoField.CV_CVD);
+                    ValueObject carrierVisit = FrameworkPresentationUtils.getEntityFieldValues(ArgoEntity.CARRIER_VISIT, (Long) vesselFormWidget.getValue(), cvIdList, false);
+
                     ICarinaWidget vesselVisitPhase = (ICarinaWidget) CustomBeanPALRBFormController.this.getFormWidget(CUSTOM_LRB_VESSEL_VISIT_PHASE);
                     if (vesselVisitPhase != null) {
-                        vesselVisitPhase.setValue(cvVisitPhase);
+                        vesselVisitPhase.setValue(carrierVisit.getFieldValue(ArgoField.CV_VISIT_PHASE));
                         vesselVisitPhase.setEnabled(false);
                     }
 
-                    Object visitDetailsObj = FrameworkPresentationUtils.getEntityFieldValue("CarrierVisit", (Long) vesselFormWidget.getValue(), ArgoField.CV_CVD);
-                    Object vvdTimeCargoCutoff = FrameworkPresentationUtils.getEntityFieldValue("VesselVisitDetails", visitDetailsObj, VesselField.VVD_TIME_CARGO_CUTOFF);
+                    MetafieldIdList vvdIdList = new MetafieldIdList();
+                    vvdIdList.add(VesselField.VVD_TIME_CARGO_CUTOFF);
+                    vvdIdList.add(VesselField.VVD_TIME_HAZ_CUTOFF);
+                    vvdIdList.add(VesselField.VVD_TIME_REEFER_CUTOFF);
+                    ValueObject vesselVisitDetails = FrameworkPresentationUtils.getEntityFieldValues(VesselEntity.VESSEL_VISIT_DETAILS, carrierVisit.getFieldValue(ArgoField.CV_CVD), vvdIdList, false);
+
                     ICarinaWidget vvdTimeCargoCutoffWidget = (ICarinaWidget) CustomBeanPALRBFormController.this.getFormWidget(CUSTOM_LRB_VESSEL_VISIT_CARGO_CUT_OFF);
                     if (vvdTimeCargoCutoffWidget != null) {
-                        vvdTimeCargoCutoffWidget.setValue(vvdTimeCargoCutoff);
+                        vvdTimeCargoCutoffWidget.setValue(vesselVisitDetails.getFieldValue(VesselField.VVD_TIME_CARGO_CUTOFF));
                     }
 
-                    Object vvdTimeHazCutoff = FrameworkPresentationUtils.getEntityFieldValue("VesselVisitDetails", visitDetailsObj, VesselField.VVD_TIME_HAZ_CUTOFF);
                     ICarinaWidget vvdTimeHazCutoffWidget = (ICarinaWidget) CustomBeanPALRBFormController.this.getFormWidget(CUSTOM_LRB_VESSEL_VISIT_HAZ_CUT_OFF);
                     if (vvdTimeHazCutoffWidget != null) {
-                        vvdTimeHazCutoffWidget.setValue(vvdTimeHazCutoff);
+                        vvdTimeHazCutoffWidget.setValue(vesselVisitDetails.getFieldValue(VesselField.VVD_TIME_HAZ_CUTOFF));
                     }
 
-                    Object vvdTimeReeferCutoff = FrameworkPresentationUtils.getEntityFieldValue("VesselVisitDetails", visitDetailsObj, VesselField.VVD_TIME_REEFER_CUTOFF);
                     ICarinaWidget vvdTimeReeferCutoffWidget = (ICarinaWidget) CustomBeanPALRBFormController.this.getFormWidget(CUSTOM_LRB_VESSEL_VISIT_REEFER_CUT_OFF);
                     if (vvdTimeReeferCutoffWidget != null) {
-                        vvdTimeReeferCutoffWidget.setValue(vvdTimeReeferCutoff);
+                        vvdTimeReeferCutoffWidget.setValue(vesselVisitDetails.getFieldValue(VesselField.VVD_TIME_REEFER_CUTOFF));
                     }
                 }
             });
         }
+
+
+
 
         final ICarinaWidget bookingWidget = getFormWidget(CUSTOM_LRB_BOOKING_ORDER);
         if (bookingWidget != null) {
@@ -173,23 +179,28 @@ public class CustomBeanPALRBFormController extends FormController implements EBe
                 protected void safeValueChanged(CarinaFormValueEvent paramCarinaFormValueEvent) {
                     if (bookingWidget.getValue() != null) {
                         ICarinaLovWidget eqOrderItemWidget = (ICarinaLovWidget) CustomBeanPALRBFormController.this.getFormWidget(CUSTOM_LRB_EQO_ORDER_ITEM)
-                        Object bkgOod = FrameworkPresentationUtils.getEntityFieldValue("Booking", (Long) bookingWidget.getValue(), OrdersField.EQO_OOD);
-                        if (oogWidget != null && Boolean.TRUE.equals(bkgOod)) {
-                            oogWidget.setValue(bkgOod);
+
+                        MetafieldIdList bkgIdList = new MetafieldIdList();
+                        bkgIdList.add(OrdersField.EQO_OOD);
+                        bkgIdList.add(OrdersField.EQO_POD1);
+                        ValueObject bookingVao = FrameworkPresentationUtils.getEntityFieldValues(OrdersEntity.BOOKING, (Long) bookingWidget.getValue(), bkgIdList, false);
+
+
+                        if (oogWidget != null && Boolean.TRUE.equals(bookingVao.getFieldValue(OrdersField.EQO_OOD))) {
+                            oogWidget.setValue(bookingVao.getFieldValue(OrdersField.EQO_OOD));
                             oogWidget.setEnabled(Boolean.TRUE);
                         }
-                        Object bkgPod = FrameworkPresentationUtils.getEntityFieldValue("Booking", (Long) bookingWidget.getValue(), OrdersField.EQO_POD1);
                         if (bkgPodWidget != null) {
-                            bkgPodWidget.setValue(bkgPod);
+                            bkgPodWidget.setValue(bookingVao.getFieldValue(OrdersField.EQO_POD1));
                         }
                         if (eqOrderItemWidget != null) {
                             IDomainQueryLovKey eqOrderLov = LovKeyFactory.valueOf(getEqOrderItemFromBooking(bookingWidget.getValue()));
                             eqOrderLov.setStyle(Style.LABEL1_PAREN_LABEL2)
                             eqOrderItemWidget.setLovKey(eqOrderLov);
                             Boolean isSelected = eqOrderItemWidget.selectSingleChoiceElement();
-                            if (isSelected){
+                            if (isSelected) {
                                 ICarinaWidget lrbMaxCountWidget = (ICarinaWidget) CustomBeanPALRBFormController.this.getFormWidget(CUSTOM_LRB_MAX_COUNT)
-                                if (lrbMaxCountWidget!=null) {
+                                if (lrbMaxCountWidget != null) {
                                     lrbMaxCountWidget.requestFocus();
                                 }
                             } else {
@@ -212,23 +223,33 @@ public class CustomBeanPALRBFormController extends FormController implements EBe
                 bkgItemQtyWidget.setEnabled(Boolean.FALSE);
             }
             ICarinaWidget bkgItemMaxAllowedWidget = (ICarinaWidget) getFormWidget(CUSTOM_LRB_BOOKING_ITEM_MAX_ALLOWED);
-            if (bkgItemMaxAllowedWidget!=null) {
+            if (bkgItemMaxAllowedWidget != null) {
                 bkgItemMaxAllowedWidget.setEnabled(Boolean.FALSE);
             }
             eqOrderItemWidget.addFormValueListener(new AbstractCarinaFormValueListener() {
                 @Override
                 protected void safeValueChanged(CarinaFormValueEvent paramCarinaFormValueEvent) {
                     if (eqOrderItemWidget.getValue() != null) {
-                        Object bkgItemQty = FrameworkPresentationUtils.getEntityFieldValue("EquipmentOrderItem", (Long) eqOrderItemWidget.getValue(), OrdersField.EQOI_QTY);
+                        LOGGER.warn("INformation class "+paramCarinaFormValueEvent);
+
+                        MetafieldIdList eqoiIdList = new MetafieldIdList();
+                        eqoiIdList.add(OrdersField.EQOI_QTY);
+                        eqoiIdList.add(OrdersField.EQOI_TALLY);
+                        eqoiIdList.add(OrdersField.EQOI_HAZARDS);
+                        ValueObject eqoiVao = FrameworkPresentationUtils.getEntityFieldValues(OrdersEntity.EQUIPMENT_ORDER_ITEM, (Long) eqOrderItemWidget.getValue(), eqoiIdList, false);
+
+                        MetafieldIdList eqoIdList = new MetafieldIdList();
+                        eqoIdList.add(OrdersField.EQO_HAZARDS);
+                        ValueObject eqoVao = FrameworkPresentationUtils.getEntityFieldValues(OrdersEntity.EQUIPMENT_ORDER, (Long) bookingWidget.getValue(), eqoIdList, false);
+
                         if (bkgItemQtyWidget != null) {
-                            bkgItemQtyWidget.setValue(bkgItemQty);
+                            bkgItemQtyWidget.setValue(eqoiVao.getFieldValue(OrdersField.EQOI_QTY));
                         }
-                        Object bkgItemTally = FrameworkPresentationUtils.getEntityFieldValue("EquipmentOrderItem", (Long) eqOrderItemWidget.getValue(), OrdersField.EQOI_TALLY);
-                        if (bkgItemMaxAllowedWidget!=null) {
-                            bkgItemMaxAllowedWidget.setValue(bkgItemQty-bkgItemTally);
+                        if (bkgItemMaxAllowedWidget != null) {
+                            bkgItemMaxAllowedWidget.setValue(eqoiVao.getFieldValue(OrdersField.EQOI_QTY) - eqoiVao.getFieldValue(OrdersField.EQOI_TALLY));
                         }
-                        Object bkgItemHaz = FrameworkPresentationUtils.getEntityFieldValue("EquipmentOrderItem", (Long) eqOrderItemWidget.getValue(), OrdersField.EQOI_HAZARDS);
-                        Object bkgHaz = FrameworkPresentationUtils.getEntityFieldValue("EquipmentOrder", (Long) bookingWidget.getValue(), OrdersField.EQO_HAZARDS);
+                        Object bkgItemHaz = eqoiVao.getFieldValue(OrdersField.EQOI_HAZARDS);
+                        Object bkgHaz = eqoVao.getFieldValue(OrdersField.EQO_HAZARDS);
                         if (bkgItemHaz != null || bkgHaz != null) {
                             bkgItemHaz = bkgItemHaz != null ? bkgItemHaz : bkgHaz;
                             String hazClasses = getHazardClass(bkgItemHaz);
@@ -292,7 +313,7 @@ public class CustomBeanPALRBFormController extends FormController implements EBe
         } else {
             hazClasses.append("Haz not found");
         }
-        LOGGER.warn("haz class "+hazClasses.toString());
+        LOGGER.warn("haz class " + hazClasses.toString());
         return hazClasses.toString();
     }
 
@@ -301,20 +322,33 @@ public class CustomBeanPALRBFormController extends FormController implements EBe
         return (Serializable) source.get(0);
     }
 
-    private static final MetafieldId CUSTOM_LRB_VESSEL_VISIT = MetafieldIdFactory.valueOf("customEntityFields.customlrbVesselVisit");
-    private static final MetafieldId CUSTOM_LRB_BOOKING_ORDER = MetafieldIdFactory.valueOf("customEntityFields.customlrbBookingOrder");
-    private static final MetafieldId CUSTOM_LRB_EQO_ORDER_ITEM = MetafieldIdFactory.valueOf("customEntityFields.customlrbEqOrderItem");
-    private static final MetafieldId CUSTOM_LRB_HAZARDS = MetafieldIdFactory.valueOf("customEntityFields.customlrbHazards");
-    public static MetafieldId CUSTOM_LRB_LINE_OPERATOR = MetafieldIdFactory.valueOf("customEntityFields.customlrbLineOperator");
-    public static MetafieldId CUSTOM_LRB_VESSEL_VISIT_PHASE = MetafieldIdFactory.valueOf("customEntityFields.customlrbVesselVisit.cvVisitPhase");
-    public static MetafieldId CUSTOM_LRB_VESSEL_VISIT_CARGO_CUT_OFF = MetafieldIdFactory.valueOf("customEntityFields.customlrbVesselVisit.cvCvd.vvdTimeCargoCutoff");
-    public static MetafieldId CUSTOM_LRB_VESSEL_VISIT_HAZ_CUT_OFF = MetafieldIdFactory.valueOf("customEntityFields.customlrbVesselVisit.cvCvd.vvdTimeHazCutoff");
-    public static MetafieldId CUSTOM_LRB_VESSEL_VISIT_REEFER_CUT_OFF = MetafieldIdFactory.valueOf("customEntityFields.customlrbVesselVisit.cvCvd.vvdTimeReeferCutoff");
+    private static
+    final MetafieldId CUSTOM_LRB_VESSEL_VISIT = MetafieldIdFactory.valueOf("customEntityFields.customlrbVesselVisit");
+    private static
+    final MetafieldId CUSTOM_LRB_BOOKING_ORDER = MetafieldIdFactory.valueOf("customEntityFields.customlrbBookingOrder");
+    private static
+    final MetafieldId CUSTOM_LRB_EQO_ORDER_ITEM = MetafieldIdFactory.valueOf("customEntityFields.customlrbEqOrderItem");
+    private static
+    final MetafieldId CUSTOM_LRB_HAZARDS = MetafieldIdFactory.valueOf("customEntityFields.customlrbHazards");
+    public
+    static MetafieldId CUSTOM_LRB_LINE_OPERATOR = MetafieldIdFactory.valueOf("customEntityFields.customlrbLineOperator");
+    public
+    static MetafieldId CUSTOM_LRB_VESSEL_VISIT_PHASE = MetafieldIdFactory.valueOf("customEntityFields.customlrbVesselVisit.cvVisitPhase");
+    public
+    static MetafieldId CUSTOM_LRB_VESSEL_VISIT_CARGO_CUT_OFF = MetafieldIdFactory.valueOf("customEntityFields.customlrbVesselVisit.cvCvd.vvdTimeCargoCutoff");
+    public
+    static MetafieldId CUSTOM_LRB_VESSEL_VISIT_HAZ_CUT_OFF = MetafieldIdFactory.valueOf("customEntityFields.customlrbVesselVisit.cvCvd.vvdTimeHazCutoff");
+    public
+    static MetafieldId CUSTOM_LRB_VESSEL_VISIT_REEFER_CUT_OFF = MetafieldIdFactory.valueOf("customEntityFields.customlrbVesselVisit.cvCvd.vvdTimeReeferCutoff");
     public static String CUSTOM_LATE_RECEIVAL_BOOKING = "com.portsamerica.navis.core.CustomPALateReceivalBooking";
     private static final MetafieldId CUSTOM_LAB_OOG = MetafieldIdFactory.valueOf("customEntityFields.customlrbIsOOG");
-    private static final MetafieldId CUSTOM_LRB_BOOKING_ORDER_POD = MetafieldIdFactory.valueOf("customEntityFields.customlrbBookingOrder.eqoPod1");
-        private static final MetafieldId CUSTOM_LRB_BOOKING_ITEM_QTY = MetafieldIdFactory.valueOf("customEntityFields.customlrbEqOrderItem.eqoiQty");
-    private static final MetafieldId CUSTOM_LRB_BOOKING_ITEM_MAX_ALLOWED = MetafieldIdFactory.valueOf("customEntityFields.customlrbEqOrderItem.eqoiTally");
-    private static MetafieldId CUSTOM_LRB_MAX_COUNT = MetafieldIdFactory.valueOf("customEntityFields.customlrbMaxCount");
+    private static
+    final MetafieldId CUSTOM_LRB_BOOKING_ORDER_POD = MetafieldIdFactory.valueOf("customEntityFields.customlrbBookingOrder.eqoPod1");
+    private static
+    final MetafieldId CUSTOM_LRB_BOOKING_ITEM_QTY = MetafieldIdFactory.valueOf("customEntityFields.customlrbEqOrderItem.eqoiQty");
+    private static
+    final MetafieldId CUSTOM_LRB_BOOKING_ITEM_MAX_ALLOWED = MetafieldIdFactory.valueOf("customEntityFields.customlrbEqOrderItem.eqoiTally");
+    private
+    static MetafieldId CUSTOM_LRB_MAX_COUNT = MetafieldIdFactory.valueOf("customEntityFields.customlrbMaxCount");
     private static final Logger LOGGER = Logger.getLogger(this.class);
 }
